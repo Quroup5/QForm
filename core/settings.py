@@ -47,6 +47,8 @@ THIRD_APPS = [
 ]
 LOCAL_APPS = [
     'users',
+    'forms',
+    'processes'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_APPS + LOCAL_APPS
