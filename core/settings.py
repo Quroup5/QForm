@@ -9,9 +9,9 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
-
+from decouple import config
 import environ
 
 env = environ.Env()
@@ -67,7 +67,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        "DIRS": [os.path.join(BASE_DIR, "template")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -148,3 +148,17 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
+# __Email Settings__ #
+DEPENDENT_EMAIL_ON_DEBUG = config("DEPENDENT_EMAIL_ON_DEBUG", cast=bool, default=True)
+if DEBUG is True and DEPENDENT_EMAIL_ON_DEBUG is True:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    EMAIL_HOST_USER = ""
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = config("EMAIL_HOST")
+    EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+    EMAIL_PORT = config("EMAIL_PORT", cast=int)
+    EMAIL_USE_SSL = config("EMAIL_USE_SSL", cast=bool)
+    EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool)
+    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
