@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -24,5 +24,7 @@ class UserRegister(APIView):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+
+    #permission_classes = (permissions.IsAdminUser,)
     queryset = User.objects.all()
     serializer_class = UserSerializer

@@ -10,6 +10,6 @@ class UserSerializer(
 
 
 class CreateUserSerializer(serializers.Serializer):
-    username = serializers.CharField(min_length=3)
-    password = serializers.CharField(min_length=6)
-    email = serializers.EmailField(min_length=4)
+    username = serializers.CharField(min_length=3, required=True)
+    password = serializers.CharField(min_length=6, required=True)
+    email = serializers.EmailField(min_length=4, required=True)
