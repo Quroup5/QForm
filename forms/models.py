@@ -11,7 +11,7 @@ class Form(models.Model):
     visitor_count = models.IntegerField(default=0)
     response_count = models.IntegerField(default=0)
     is_private = models.BooleanField(default=False)
-    password = models.CharField(max_length=100, null=True)
+    password = models.CharField(max_length=50, null=True)
 
     user = models.ForeignKey('users.User', on_delete=models.PROTECT)
     category = models.ForeignKey('Category', on_delete=models.PROTECT)
@@ -59,7 +59,7 @@ class Process(models.Model):
     is_private = models.BooleanField(default=False)
     visitor_count = models.IntegerField(default=0)
     response_count = models.IntegerField(default=0)
-    password = models.CharField(max_length=255, null=True)
+    password = models.CharField(max_length=50, null=True)
 
     category = models.ForeignKey('Category', on_delete=models.PROTECT)
 
