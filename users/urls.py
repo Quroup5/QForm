@@ -9,7 +9,6 @@ router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
     path('register/', UserRegisterView.as_view(), name='register'),
     path('token-login/', views.obtain_auth_token),
     path('token/verify/', TokenVerifyView.as_view(), name='JWT_token_verify'),
@@ -18,4 +17,4 @@ urlpatterns = [
     path('otp/verify/', OtpVerificationView.as_view(), name='otp_verify'),
     path('otp/request/', OtpRequestView.as_view(), name='otp_request'),
 
-]
+]+ router.urls
