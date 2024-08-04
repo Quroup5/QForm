@@ -3,6 +3,7 @@ from random import randint
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.core.cache import cache
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets, status, permissions
@@ -12,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core import settings
 from .serializers import CreateUserSerializer, OtpSerializerRequest, \
     OtpSerializerVerification, UserSerializer, UserProfileUpdateSerializer
 
@@ -52,8 +54,17 @@ class OtpRequestView(APIView):
 
         # This generates the otp and keeps it on cache memory
         generated_otp = str(randint(1000, 9999))
-        print(f'Your one time password is : {generated_otp} \n',
-              f'It will expires by one minute')
+        print('-' * 100, f'\n Your one time password is : {generated_otp} \n',
+              f'It will expires by one minute \n', '-' * 100)
+
+        send_mail(
+            subject='One Time Password to Reset Password',
+            message=f'Your one time password is : {generated_otp} \n '
+                    f'It will expires by 2 minutes',
+            from_email='Group5@quera.com',
+            recipient_list=[target_user.email, ]
+        )
+
         cache.set(target_user.id, generated_otp, timeout=120)
 
         return Response(data={"msg": f'Your one time password is : {generated_otp}. '
