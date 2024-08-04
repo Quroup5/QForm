@@ -8,12 +8,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, permissions
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import UserSerializer, CreateUserSerializer, OtpSerializerRequest, \
-    OtpSerializerVerification
-from .models import User
+from .serializers import CreateUserSerializer, OtpSerializerRequest, \
+    OtpSerializerVerification, UserSerializer, UserProfileUpdateSerializer
 
 
 class UserRegisterView(CreateAPIView):
@@ -31,13 +31,12 @@ class UserRegisterView(CreateAPIView):
                                        password=serializer.data.get('password'),
                                        email=serializer.data.get('email'))
 
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.IsAdminUser,)
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+        return Response(data={
+            "msg": "User successfully created",
+            "username": serializer.data.get('username'),
+            "email": serializer.data.get('email'),
+        },
+            status=status.HTTP_201_CREATED)
 
 
 class OtpRequestView(APIView):
@@ -85,3 +84,30 @@ class OtpVerificationView(APIView):
 
         return Response(data={"msg": f'Password of {target_user.username} changed!'},
                         status=status.HTTP_205_RESET_CONTENT)
+
+
+class UserProfileUpdateView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, request, *args, **kwargs):
+
+        serializer = UserProfileUpdateSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        if serializer.data.get("first_name"):
+            self.request.user.first_name = serializer.data.get("first_name")
+
+        if serializer.data.get("last_name"):
+            self.request.user.last_name = serializer.data.get("last_name")
+
+        if serializer.data.get("email"):
+            self.request.user.email = serializer.data.get("email")
+
+        self.request.user.save()
+
+        return Response(data=serializer.data, status=status.HTTP_205_RESET_CONTENT)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.IsAdminUser,)
+    queryset = get_user_model().objects.all()
+    serializer_class = UserSerializer

@@ -45,7 +45,6 @@ DJANGO_APPS = [
 THIRD_APPS = [
     'rest_framework',
     'django_extensions',
-    # 'rest_framework.authtoken',
     'rest_framework_simplejwt',
 ]
 LOCAL_APPS = [
@@ -151,9 +150,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication'
-        # 'rest_framework.authentication.TokenAuthentication',
     ]
 }
 

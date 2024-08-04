@@ -1,12 +1,12 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import User
 
 
 class UserSerializer(
     serializers.ModelSerializer):  # TODO: Check https://www.django-rest-framework.org/api-guide/serializers/#hyperlinkedmodelserializer
     class Meta:
-        model = User
-        fields = ['username', 'first_name', 'last_name']
+        model = get_user_model()
+        fields = ['username', 'first_name', 'last_name', ]
 
 
 class CreateUserSerializer(serializers.Serializer):
@@ -14,6 +14,12 @@ class CreateUserSerializer(serializers.Serializer):
     password = serializers.CharField(
         min_length=6, required=True)
     email = serializers.EmailField(min_length=4, required=True)
+
+
+class UserProfileUpdateSerializer(serializers.Serializer):
+    first_name = serializers.CharField(min_length=2, required=False)
+    last_name = serializers.CharField(min_length=2, required=False)
+    email = serializers.EmailField(min_length=4, required=False)
 
 
 class OtpSerializerRequest(serializers.Serializer):
