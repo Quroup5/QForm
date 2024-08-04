@@ -45,7 +45,7 @@ DJANGO_APPS = [
 THIRD_APPS = [
     'rest_framework',
     'django_extensions',
-    #'rest_framework.authtoken',
+    # 'rest_framework.authtoken',
     'rest_framework_simplejwt',
 ]
 LOCAL_APPS = [
@@ -148,4 +148,12 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication'
         # 'rest_framework.authentication.TokenAuthentication',
     ]
+}
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
 }
