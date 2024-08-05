@@ -24,8 +24,9 @@ class Form(models.Model):
         return check_password(raw_password, self.password)
 
     def save(self, *args, **kwargs):
-        if not self.password.startswith('pbkdf2_sha256$'):
-            self.password = make_password(self.password)
+        if self.password:
+            if not self.password.startswith('pbkdf2_sha256$'):
+                self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
 
@@ -76,9 +77,9 @@ class Process(models.Model):
         return check_password(raw_password, self.password)
 
     def save(self, *args, **kwargs):
-        # Ensure the password is hashed before saving
-        if not self.password.startswith('pbkdf2_sha256$'):
-            self.password = make_password(self.password)
+        if self.password:
+            if not self.password.startswith('pbkdf2_sha256$'):
+                self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
 
