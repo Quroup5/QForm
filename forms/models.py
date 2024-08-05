@@ -14,7 +14,7 @@ class Form(models.Model):
     password = models.CharField(max_length=50, null=True)
 
     user = models.ForeignKey('users.User', on_delete=models.PROTECT)
-    category = models.ForeignKey('Category', on_delete=models.PROTECT)
+    category = models.ForeignKey('Category', null=True, on_delete=models.PROTECT)
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
@@ -23,8 +23,9 @@ class Form(models.Model):
         return check_password(raw_password, self.password)
 
     def save(self, *args, **kwargs):
-        if not self.password.startswith('pbkdf2_sha256$'):
-            self.password = make_password(self.password)
+        if self.password is not None:
+            if not self.password.startswith('pbkdf2_sha256$'):
+                self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
 

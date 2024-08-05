@@ -13,7 +13,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core import settings
 from .serializers import CreateUserSerializer, OtpSerializerRequest, \
     OtpSerializerVerification, UserSerializer, UserProfileUpdateSerializer
 
