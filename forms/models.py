@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password, check_password
 
 class Category(models.Model):
     title = models.CharField(max_length=255)
+    user = models.ForeignKey('users.User', on_delete=models.PROTECT)
 
 
 class Form(models.Model):
@@ -38,12 +39,16 @@ class Question(models.Model):
         (CHECKBOX, "checkbox"),
         (TEXT, "text"),
     )
-    title = models.CharField(max_length=255)
+    name = models.CharField(max_length=50)
+    label = models.CharField(max_length=255)
     required = models.BooleanField(default=False)
     type = models.CharField(max_length=20, choices=QUESTION_TYPE_CHOICES)
-    description = models.JSONField(max_length=511)
+    metadata = models.JSONField()
 
     form = models.ForeignKey('Form', on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = ('name', 'form',)
 
 
 class Process(models.Model):
@@ -55,6 +60,7 @@ class Process(models.Model):
         (FREE, "free"),
     )
     type = models.CharField(max_length=10, choices=PROCESS_TYPE_CHOICES)
+    name = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
     is_private = models.BooleanField(default=False)
     visitor_count = models.IntegerField(default=0)
@@ -77,7 +83,7 @@ class Process(models.Model):
 
 
 class FormProcess(models.Model):
-    order = models.PositiveSmallIntegerField(null=True)
+    order = models.PositiveSmallIntegerField()
 
     process = models.ForeignKey('Process', on_delete=models.PROTECT)
     form = models.ForeignKey('Form', on_delete=models.PROTECT)
@@ -87,7 +93,7 @@ class FormProcess(models.Model):
 
 
 class Response(models.Model):
-    answer = models.JSONField(max_length=511)
+    answer = models.JSONField()
 
     form = models.ForeignKey('Form', on_delete=models.PROTECT)
-    user = models.ForeignKey('users.User', on_delete=models.PROTECT)
+    user = models.ForeignKey('users.User', on_delete=models.PROTECT, null=True)
