@@ -14,7 +14,7 @@ class Form(models.Model):
     password = models.CharField(max_length=50, null=True)
 
     user = models.ForeignKey('users.User', on_delete=models.PROTECT)
-    category = models.ForeignKey('Category', on_delete=models.PROTECT)
+    category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True)
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
@@ -61,7 +61,7 @@ class Process(models.Model):
     response_count = models.IntegerField(default=0)
     password = models.CharField(max_length=50, null=True)
 
-    category = models.ForeignKey('Category', on_delete=models.PROTECT)
+    category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True)
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
