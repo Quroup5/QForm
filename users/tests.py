@@ -4,6 +4,8 @@ from django.test import TestCase, Client
 from django.urls import reverse, resolve
 from rest_framework import status
 
+from rest_framework.test import APIClient
+
 from users.views import UserRegisterView, UserProfileUpdateView, OtpVerificationView, OtpRequestView
 
 
@@ -69,19 +71,20 @@ class TestUserAuthenticationViews(TestCase):
         self.username = "test_user"
         self.password = "123456"
         self.email = "test@test.com"
-
         data = {"username": self.username,
                 "password": self.password,
                 "email": self.email}
 
+        # This request create a user
         resp = self.client.post(reverse("register"), data=data)
+
+        # This is the data for logging in and getting JWT tokens
         data = {"username": "test_user",
                 "password": "123456"}
 
+        # This request attains JWT tokens
         response = self.client.post(reverse("JWT_token_obtain_pair"), data=data)
-
         response_data = response.json()
-
         access_token = response_data.get('access')
         refresh_token = response_data.get('refresh')
 
@@ -98,23 +101,22 @@ class TestUserAuthenticationViews(TestCase):
                 "password": self.password,
                 "email": self.email}
 
+        # This request create a user
         response0 = self.client.post(reverse("register"), data=data)
+
         data = {"username": "test_user",
                 "password": "123456"}
-
+        # This request attains JWT tokens
         response = self.client.post(reverse("JWT_token_obtain_pair"), data=data)
-
         response_data = response.json()
-
         access_token = response_data.get('access')
         refresh_token = response_data.get('refresh')
-        data = {"firs_name": "updated_user",
-                }
-        auth_headers = {
-            'Authorization': f'Bearer {access_token}',
 
-        }
-
-        response2 = self.client.put(reverse("update_profile"), data=data, )
-
-        # TODO complete the test
+        # This data is for updating first name of profile. It requires access token
+        data = {"first_name": "updated_user", }
+        self.APIClient = APIClient()
+        self.APIClient.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
+        # This is the updating request with token in its header which completes the integrated test
+        response2 = self.APIClient.put(reverse("update_profile"), data=data)
+        self.assertEqual(response2.status_code, status.HTTP_205_RESET_CONTENT)
+        self.assertEqual(get_user_model().objects.first().first_name, "updated_user")
