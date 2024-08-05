@@ -66,24 +66,33 @@ class TestUserAppViews(TestCase):
 
 
 class TestUserAuthenticationViews(TestCase):
-
-    def test_user_login(self):
+    def setUp(self):
         self.username = "test_user"
         self.password = "123456"
         self.email = "test@test.com"
+        self.client = APIClient()
+
+    def create_user(self):
         data = {"username": self.username,
                 "password": self.password,
                 "email": self.email}
-
         # This request create a user
-        resp = self.client.post(reverse("register"), data=data)
+        response = self.client.post(reverse("register"), data=data)
+        return response
 
+    def login_to_get_JWT_token(self):
         # This is the data for logging in and getting JWT tokens
         data = {"username": "test_user",
                 "password": "123456"}
 
         # This request attains JWT tokens
         response = self.client.post(reverse("JWT_token_obtain_pair"), data=data)
+        return response
+
+    def test_user_login(self):
+        self.create_user()
+        response = self.login_to_get_JWT_token()
+
         response_data = response.json()
         access_token = response_data.get('access')
         refresh_token = response_data.get('refresh')
@@ -93,30 +102,26 @@ class TestUserAuthenticationViews(TestCase):
         self.assertIsNotNone(refresh_token)
 
     def test_jwt_access_token_accessing_update_profile(self):
-        self.username = "test_user"
-        self.password = "123456"
-        self.email = "test@test.com"
-
-        data = {"username": self.username,
-                "password": self.password,
-                "email": self.email}
+        # This is an integrated test:
+        # 1-Creating a user
+        # 2-Logging and getting token
+        # 3-Authenticating with token
+        # 4-Updating profile
 
         # This request create a user
-        response0 = self.client.post(reverse("register"), data=data)
+        self.create_user()
 
-        data = {"username": "test_user",
-                "password": "123456"}
         # This request attains JWT tokens
-        response = self.client.post(reverse("JWT_token_obtain_pair"), data=data)
+        response = self.login_to_get_JWT_token()
         response_data = response.json()
         access_token = response_data.get('access')
         refresh_token = response_data.get('refresh')
 
-        # This data is for updating first name of profile. It requires access token
+        # This data is for updating first name of profile. It requires access token.
         data = {"first_name": "updated_user", }
         self.APIClient = APIClient()
         self.APIClient.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
-        # This is the updating request with token in its header which completes the integrated test
-        response2 = self.APIClient.put(reverse("update_profile"), data=data)
-        self.assertEqual(response2.status_code, status.HTTP_205_RESET_CONTENT)
+
+        response_2 = self.APIClient.put(reverse("update_profile"), data=data)
+        self.assertEqual(response_2.status_code, status.HTTP_205_RESET_CONTENT)
         self.assertEqual(get_user_model().objects.first().first_name, "updated_user")

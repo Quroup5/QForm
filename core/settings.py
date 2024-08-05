@@ -156,12 +156,18 @@ REST_FRAMEWORK = {
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+# This is for caching without redis. Uncomment it, if you do not use redis:
 
 # CACHES = {
 #     "default": {
 #         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
 #     }
 # }
+
+
+# This is for caching with redis. You need to install redis.
+# Comment it, if you do not use redis:
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
