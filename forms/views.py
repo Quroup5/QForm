@@ -1,74 +1,63 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import permissions, status
+from django.shortcuts import get_object_or_404, get_list_or_404
+from rest_framework import permissions, status, viewsets
 
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from forms.models import Form, Category
-from forms.serializers import CreateFormSerializer, UpdateFormSerializer
+from forms.models import Form
+from forms.serializers import FormViewSetSerializer, FormUpdateViewSetSerializer, FormCreateViewSetSerializer
 
 
-#
-#
-# class CreateQuestionView(CreateAPIView):
-#     permission_classes = (permissions.IsAuthenticated,)
-#     serializer_class = CreateQuestionSerializer
-
-class CreateFormView(APIView):
+class FormViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
-        serializer = CreateFormSerializer(data=self.request.data)
+    def get_serializer_class(self):
+        if self.action == "update":
+            return FormUpdateViewSetSerializer
+        if self.action == "create":
+            return FormCreateViewSetSerializer
+        return FormViewSetSerializer
+
+    def get_queryset(self):
+        return get_list_or_404(Form, user=self.request.user)
+
+    def get_object(self):
+        return get_object_or_404(Form, user=self.request.user, pk=self.kwargs.get('pk'))
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        form = Form(title=serializer.data.get('title'),
+        form = Form(title=serializer.validated_data.get('title'),
                     is_private=False,
-                    user=self.request.user)
+                    user=request.user)
 
-        if serializer.data.get('password') is not None:
+        if serializer.validated_data.get('password') is not None:
             form.is_private = True
-            form.set_password(serializer.data.get('password'))
+            form.set_password(serializer.validated_data.get('password'))
 
         form.save()
+        return Response(data={"title": serializer.validated_data.get('title')},
+                        status=status.HTTP_201_CREATED)
 
-        return Response(data={
-            "msg": "your form was created!",
-            "form_id": form.id,
-            "title": serializer.data.get("title")
-        },
-            status=status.HTTP_201_CREATED)
-
-
-class UpdateFormView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def put(self, request, *args, **kwargs):
-        serializer = UpdateFormSerializer(data=self.request.data)
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
 
-        form = get_object_or_404(Form,
-                                 id=serializer.data.get("form_id"),
-                                 user=self.request.user)
+        form = get_object_or_404(Form, pk=self.get_object().pk, user=self.request.user)
 
         if serializer.validated_data.get('password') is not None:
             form.is_private = True
             form.set_password(serializer.data.get('password'))
-
-        if serializer.validated_data.get('category') is not None:
-            category = Category(title=serializer.validated_data.get('category'))
-            category.save()
-            form.category = category
-
+        else:
+            form.is_private = False
+            form.password = None
 
         if serializer.validated_data.get('title') is not None:
             form.title = serializer.validated_data.get('title')
 
+        if serializer.validated_data.get('password') is None and \
+                serializer.validated_data.get('title') is None:
+            return Response(data={"error": "Cannot left all fields blank!"}, status=status.HTTP_400_BAD_REQUEST)
+
         form.save()
 
-        return Response(data={
-            "msg": "your form was updated",
-            "form_id": form.id,
-            "title": form.title,
-            "category": form.category.title
-        },
-            status=status.HTTP_201_CREATED)
+        return Response(data={"title": form.title}, status=status.HTTP_205_RESET_CONTENT)
