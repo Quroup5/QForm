@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework import routers
 
-from .views import UserViewSet, UserRegisterView, OtpVerificationView, OtpRequestView, UserProfileUpdateView
+from .views import UserViewSet, UserRegisterView, OtpVerificationView, UserProfileUpdateView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 router = routers.DefaultRouter()
@@ -14,6 +14,6 @@ urlpatterns = [
                   path('token/obtain/', TokenObtainPairView.as_view(), name='JWT_token_obtain_pair'),
                   path('token/refresh/', TokenRefreshView.as_view(), name='JWT_token_refresh'),
                   path('otp/verify/', OtpVerificationView.as_view(), name='otp_verify'),
-                  path('otp/request/', OtpRequestView.as_view(), name='otp_request'),
+                  # path('otp/request/', OtpRequestView.as_view(), name='otp_request'),
 
               ] + router.urls

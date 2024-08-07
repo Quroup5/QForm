@@ -8,7 +8,7 @@ from redis_management.redis_manager import RedisManager
 
 class ManageMailService:
 
-    def init(self, receiver_email):
+    def __init__(self, receiver_email):
         self.receiver_email = receiver_email
 
     def send_email_to_user(self, subject, content):
