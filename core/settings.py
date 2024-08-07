@@ -40,10 +40,12 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
 ]
 THIRD_APPS = [
     'rest_framework',
     'django_extensions',
+    'rest_framework_simplejwt',
 ]
 LOCAL_APPS = [
     'users',
@@ -145,9 +147,13 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.AllowAny'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
     ]
 }
+
 # __Email Settings__ #
 DEPENDENT_EMAIL_ON_DEBUG = config("DEPENDENT_EMAIL_ON_DEBUG", cast=bool, default=True)
 if DEBUG is True and DEPENDENT_EMAIL_ON_DEBUG is True:
@@ -162,3 +168,13 @@ else:
     EMAIL_USE_SSL = config("EMAIL_USE_SSL", cast=bool)
     EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool)
     DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
