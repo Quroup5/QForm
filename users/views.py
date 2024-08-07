@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets, status, permissions
-from rest_framework.exceptions import ValidationError
+
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -22,10 +22,7 @@ class UserRegisterView(CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        try:
-            serializer.is_valid(raise_exception=True)
-        except ValidationError:
-            return Response(data={"error": "Validation Error"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         user_class = get_user_model()
         user_class.objects.create_user(username=serializer.data.get('username'),
@@ -33,7 +30,6 @@ class UserRegisterView(CreateAPIView):
                                        email=serializer.data.get('email'))
 
         return Response(data={
-            "msg": "User successfully created",
             "username": serializer.data.get('username'),
             "email": serializer.data.get('email'),
         },

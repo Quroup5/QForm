@@ -2,11 +2,9 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 
-class UserSerializer(
-    serializers.ModelSerializer):  # TODO: Check https://www.django-rest-framework.org/api-guide/serializers/#hyperlinkedmodelserializer
-    class Meta:
-        model = get_user_model()
-        fields = ['username', 'first_name', 'last_name', ]
+class UserSerializer(serializers.ModelSerializer):
+    model = get_user_model()
+    fields = ['username', 'first_name', 'last_name', ]
 
 
 class CreateUserSerializer(serializers.Serializer):
