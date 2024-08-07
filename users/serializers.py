@@ -31,5 +31,5 @@ class OtpSerializerRequest(serializers.Serializer):
 
 class OtpSerializerVerification(serializers.Serializer):
     username = serializers.CharField(max_length=200, required=True)
-    # password = serializers.CharField(min_length=6, required=True)
+    password = serializers.CharField(min_length=6, required=True)
     otp = serializers.CharField(min_length=5, max_length=5, required=True)

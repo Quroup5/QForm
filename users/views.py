@@ -42,45 +42,45 @@ class UserRegisterView(CreateAPIView):
             status=status.HTTP_201_CREATED)
 
 
-# class OtpRequestView(APIView):
-#     def post(self, request):
-#         serializer = OtpSerializerRequest(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         target_user = get_object_or_404(get_user_model(),
-#                                         username=serializer.data.get('username'))
-#
-#         if cache.get(target_user.id) is not None:
-#             return Response(data={"error": "Too many request you should wait for requesting new OTP. "},
-#                             status=status.HTTP_429_TOO_MANY_REQUESTS)
-#
-#         # This generates the otp and keeps it on cache memory
-#         generated_otp = str(randint(1000, 9999))
-#         print('-' * 100, f'\n Your one time password is : {generated_otp} \n',
-#               f'It will expires by one minute \n', '-' * 100)
-#
-#         send_mail(
-#             subject='One Time Password to Reset Password',
-#             message=f'Your one time password is : {generated_otp} \n '
-#                     f'It will expires by 2 minutes',
-#             from_email='Group5@quera.com',
-#             recipient_list=[target_user.email, ]
-#         )
-#
-#         cache.set(target_user.id, generated_otp, timeout=120)
-#
-#         return Response(data={"msg": f'Your one time password is : {generated_otp}. '
-#                                      f'It will expires by one minute'},
-#                         status=status.HTTP_201_CREATED)
+class OtpRequestView(APIView):
+    def post(self, request):
+        serializer = OtpSerializerRequest(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        target_user = get_object_or_404(get_user_model(),
+                                        username=serializer.data.get('username'))
+
+        if cache.get(target_user.id) is not None:
+            return Response(data={"error": "Too many request you should wait for requesting new OTP. "},
+                            status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        # This generates the otp and keeps it on cache memory
+        generated_otp = str(randint(1000, 9999))
+        print('-' * 100, f'\n Your one time password is : {generated_otp} \n',
+              f'It will expires by one minute \n', '-' * 100)
+
+        send_mail(
+            subject='One Time Password to Reset Password',
+            message=f'Your one time password is : {generated_otp} \n '
+                    f'It will expires by 2 minutes',
+            from_email='Group5@quera.com',
+            recipient_list=[target_user.email, ]
+        )
+
+        cache.set(target_user.id, generated_otp, timeout=120)
+
+        return Response(data={"msg": f'Your one time password is : {generated_otp}. '
+                                     f'It will expires by one minute'},
+                        status=status.HTTP_201_CREATED)
 
 
 class OtpVerificationView(GenericAPIView):
+    permission_classes = (IsAuthenticated,)
     serializer_class = OtpSerializerVerification
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        target_user = get_object_or_404(get_user_model(),
-                                        username=serializer.data.get('username'))
+        target_user = request.user
 
         # sent_otp = cache.get(target_user.id)
         user_verify_otp_response = target_user.verify_user_otp_code(serializer.validated_data.get('otp'))
