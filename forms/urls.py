@@ -4,6 +4,4 @@ from .views import FormViewSet
 router = DefaultRouter()
 router.register(r'forms', FormViewSet)
 
-urlpatterns = [
-
-              ] + router.urls
+urlpatterns = [] + router.urls

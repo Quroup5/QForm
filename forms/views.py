@@ -9,6 +9,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     the owner of the model object in that model's `ModelViewSet`
     in the `permission_classes` list.
     """
+
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
@@ -18,7 +19,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 class FormViewSet(viewsets.ModelViewSet):
     queryset = Form.objects.all()
     serializer_class = FormSerializer
-    permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissionsOrAnonReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
