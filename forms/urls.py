@@ -1,8 +1,9 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
+from .views import FormViewSet
 
-from forms.views import CreateFormView, UpdateFormView
+router = DefaultRouter()
+router.register(r'forms', FormViewSet)
 
 urlpatterns = [
-    path('create/form/', CreateFormView.as_view(), name='create_form'),
-    path('update/form/', UpdateFormView.as_view(), name='update_form')
-]
+
+              ] + router.urls
