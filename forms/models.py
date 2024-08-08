@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import make_password
 
 
 class Category(models.Model):
@@ -17,16 +17,9 @@ class Form(models.Model):
     user = models.ForeignKey('users.User', on_delete=models.PROTECT)
     category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True)
 
-    def set_password(self, raw_password):
-        self.password = make_password(raw_password)
-
-    def check_password(self, raw_password):
-        return check_password(raw_password, self.password)
-
     def save(self, *args, **kwargs):
-        if self.password:
-            if not self.password.startswith('pbkdf2_sha256$'):
-                self.password = make_password(self.password)
+        if self.password and not self.password.startswith('pbkdf2_'):
+            self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
 
@@ -70,16 +63,9 @@ class Process(models.Model):
 
     category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True)
 
-    def set_password(self, raw_password):
-        self.password = make_password(raw_password)
-
-    def check_password(self, raw_password):
-        return check_password(raw_password, self.password)
-
     def save(self, *args, **kwargs):
-        if self.password:
-            if not self.password.startswith('pbkdf2_sha256$'):
-                self.password = make_password(self.password)
+        if self.password and not self.password.startswith('pbkdf2_'):
+            self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
 
