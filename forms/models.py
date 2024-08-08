@@ -14,8 +14,8 @@ class Form(models.Model):
     is_private = models.BooleanField(default=False)
     password = models.CharField(max_length=50, null=True)
 
-    user = models.ForeignKey('users.User', on_delete=models.PROTECT)
-    category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True)
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
 
     def save(self, *args, **kwargs):
         if self.password and not self.password.startswith('pbkdf2_'):
@@ -39,7 +39,7 @@ class Question(models.Model):
     type = models.CharField(max_length=20, choices=QUESTION_TYPE_CHOICES)
     metadata = models.JSONField()
 
-    form = models.ForeignKey('Form', on_delete=models.PROTECT)
+    form = models.ForeignKey('Form', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('name', 'form',)
@@ -61,7 +61,7 @@ class Process(models.Model):
     response_count = models.IntegerField(default=0)
     password = models.CharField(max_length=50, null=True)
 
-    category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
 
     def save(self, *args, **kwargs):
         if self.password and not self.password.startswith('pbkdf2_'):
@@ -72,8 +72,8 @@ class Process(models.Model):
 class FormProcess(models.Model):
     order = models.PositiveSmallIntegerField()
 
-    process = models.ForeignKey('Process', on_delete=models.PROTECT)
-    form = models.ForeignKey('Form', on_delete=models.PROTECT)
+    process = models.ForeignKey('Process', on_delete=models.CASCADE)
+    form = models.ForeignKey('Form', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('order', 'process', 'form',)
@@ -82,5 +82,5 @@ class FormProcess(models.Model):
 class Response(models.Model):
     answer = models.JSONField()
 
-    form = models.ForeignKey('Form', on_delete=models.PROTECT)
-    user = models.ForeignKey('users.User', on_delete=models.PROTECT, null=True)
+    form = models.ForeignKey('Form', on_delete=models.CASCADE)
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, null=True)
