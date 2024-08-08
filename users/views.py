@@ -114,6 +114,65 @@ class UserProfileUpdateView(APIView):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (permissions.AllowAny,)
     queryset = get_user_model().objects.all()
-    serializer_class = UserSerializer
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [permissions.AllowAny()]
+        if self.action == "list" or self.action == "destroy":
+            return [permissions.IsAdminUser()]
+
+        return [permissions.IsAuthenticated()]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateUserSerializer
+        if self.action == "update":
+            return UserProfileUpdateSerializer
+        return UserSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+
+        target_user = get_object_or_404(get_user_model(), pk=kwargs.get('pk'))
+        if target_user != request.user:
+            return Response(data={"error": "No access to this user!"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        return super().retrieve(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user_class = get_user_model()
+        user_class.objects.create_user(username=serializer.validated_data.get('username'),
+                                       password=serializer.validated_data.get('password'),
+                                       email=serializer.validated_data.get('email'))
+
+        return Response(data={
+            "username": serializer.validated_data.get('username'),
+            "email": serializer.validated_data.get('email'),
+        },
+            status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        print("put")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if serializer.data.get("first_name"):
+            self.request.user.first_name = serializer.data.get("first_name")
+
+        if serializer.data.get("last_name"):
+            self.request.user.last_name = serializer.data.get("last_name")
+
+        if serializer.data.get("email"):
+            self.request.user.email = serializer.data.get("email")
+
+        target_user = get_object_or_404(get_user_model(), pk=kwargs.get('pk'))
+        if target_user != request.user:
+            return Response(data={"error": "No access to this user!"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        self.request.user.save()
+
+        return Response(data=serializer.data, status=status.HTTP_205_RESET_CONTENT)
