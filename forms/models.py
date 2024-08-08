@@ -4,7 +4,7 @@ from django.contrib.auth.hashers import make_password
 
 class Category(models.Model):
     title = models.CharField(max_length=255)
-    user = models.ForeignKey('users.User', on_delete=models.PROTECT)
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
 
 
 class Form(models.Model):
