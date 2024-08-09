@@ -62,3 +62,115 @@ class FormViewSetTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Form.objects.filter(id=form.id).exists())
+
+
+class QuestionViewSetTests(APITestCase):
+    def setUp(self):
+        self.user = baker.make('users.User')
+        self.form = baker.make(Form, user=self.user)
+        self.client.force_authenticate(user=self.user)
+        self.url = reverse('question-list')
+
+    def test_create_text_question(self):
+        data = {
+            'name': 'Question 1',
+            'label': 'What is your name?',
+            'required': True,
+            'type': 'text',
+            'metadata': {},  # Should be empty
+            'form': self.form.id,
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_select_question(self):
+        data = {
+            'name': 'Question 2',
+            'label': 'Choose a fruit',
+            'required': True,
+            'type': 'select',
+            'metadata': {
+                'selectbox1': 'Apple',
+                'selectbox2': 'Banana',
+                'selectbox3': 'Cherry',
+            },
+            'form': self.form.id,
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_invalid_metadata_for_text_question(self):
+        data = {
+            'name': 'Question 3',
+            'label': 'Invalid Text Question',
+            'required': True,
+            'type': 'text',
+            'metadata': {
+                'key': 'This should not be here'
+            },
+            'form': self.form.id,
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('metadata', response.data)
+
+    def test_invalid_metadata_structure(self):
+        data = {
+            'name': 'Question 4',
+            'label': 'Invalid Select Question',
+            'required': True,
+            'type': 'select',
+            'metadata': ['Invalid structure'],  # Should be a dictionary
+            'form': self.form.id,
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('metadata', response.data)
+
+    def test_valid_dynamic_select_metadata(self):
+        data = {
+            'name': 'Question 2',
+            'label': 'Choose options',
+            'required': True,
+            'type': 'select',
+            'metadata': {
+                'selectbox1': 'Option 1',
+                'selectbox2': 'Option 2',
+                'selectbox3': 'Option 3',
+            },
+            'form': self.form.id,
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_invalid_dynamic_metadata_key(self):
+        data = {
+            'name': 'Question 3',
+            'label': 'Choose options',
+            'required': True,
+            'type': 'select',
+            'metadata': {
+                'wrongkey1': 'Option 1',  # Invalid key
+                'selectbox2': 'Option 2'
+            },
+            'form': self.form.id,
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('metadata', response.data)
+
+    def test_invalid_dynamic_metadata_value(self):
+        data = {
+            'name': 'Question 4',
+            'label': 'Choose options',
+            'required': True,
+            'type': 'checkbox',
+            'metadata': {
+                'checkbox1': 100,  # Invalid value, should be a string
+                'checkbox2': 'Option 2'
+            },
+            'form': self.form.id,
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('metadata', response.data)

@@ -3,13 +3,7 @@ from .models import Form, Question
 from .serializers import FormSerializer, QuestionSerializer
 
 
-class IsOwner(permissions.BasePermission):
-    """
-    This class can be used to grant permission only to
-    the owner of the model object in that model's `ModelViewSet`
-    in the `permission_classes` list.
-    """
-
+class IsFormOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
 
@@ -22,10 +16,13 @@ class IsQuestionOwner(permissions.BasePermission):
 class FormViewSet(viewsets.ModelViewSet):
     queryset = Form.objects.all()
     serializer_class = FormSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    permission_classes = [permissions.IsAuthenticated, IsFormOwner]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return Form.objects.filter(user=self.request.user)
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
@@ -33,12 +30,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     permission_classes = [permissions.IsAuthenticated, IsQuestionOwner]
 
-    def perform_create(self, serializer):
-        if self.request.data.get('type') == Question.TEXT:
-            pass
-        elif self.request.data.get('type') == Question.SELECT:
-            pass
-        elif self.request.data.get('type') == Question.CHECKBOX:
-            pass
-
-        serializer.save(data=self.request.data)
+    def get_queryset(self):
+        """
+        Optionally restricts the returned questions to a given form,
+        by filtering against a `form_id` query parameter in the URL.
+        """
+        queryset = Question.objects.all()
+        form_id = self.request.query_params.get('form_id')
+        if form_id is not None:
+            queryset = queryset.filter(form_id=form_id)
+        return queryset
