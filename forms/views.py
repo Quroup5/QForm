@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, serializers
 from .models import Form, Question
 from .serializers import FormSerializer, QuestionSerializer
 
@@ -24,6 +24,9 @@ class FormViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Form.objects.filter(user=self.request.user)
 
+    def retrieve(self, request, *args, **kwargs):
+        pass
+
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
@@ -31,12 +34,5 @@ class QuestionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsQuestionOwner]
 
     def get_queryset(self):
-        """
-        Optionally restricts the returned questions to a given form,
-        by filtering against a `form_id` query parameter in the URL.
-        """
-        queryset = Question.objects.all()
-        form_id = self.request.query_params.get('form_id')
-        if form_id is not None:
-            queryset = queryset.filter(form_id=form_id)
-        return queryset
+        return Question.objects.filter(form__user=self.request.user)
+
