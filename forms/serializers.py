@@ -68,3 +68,9 @@ class FormProcessSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormProcess
         fields = "__all__"
+
+
+class FormProcessDisplaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormProcess
+        fields = ["process"]

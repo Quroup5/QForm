@@ -1,14 +1,16 @@
+from django.shortcuts import get_list_or_404
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Form, Process, FormProcess, Question
-from .serializers import FormSerializer, ProcessSerializer, FormProcessSerializer, QuestionSerializer
+from .serializers import FormSerializer, ProcessSerializer, FormProcessSerializer, QuestionSerializer, \
+    FormProcessDisplaySerializer
 
 
 class IsFormOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
-
 
 
 class IsQuestionOwner(permissions.BasePermission):
@@ -45,7 +47,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-
 class ProcessViewSet(viewsets.ModelViewSet):
     queryset = Process.objects.all()
     serializer_class = ProcessSerializer
@@ -68,7 +69,6 @@ class FormProcessViewSet(viewsets.ModelViewSet):
     serializer_class = FormProcessSerializer
     permission_classes = [permissions.IsAuthenticated, IsFormProcessOwner]
 
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -88,3 +88,22 @@ class FormProcessViewSet(viewsets.ModelViewSet):
     #
     # def get_queryset(self):
     #     return Process.objects.filter(user=self.request.user)
+
+
+class DisplayProcesView(APIView):
+    serializer_class = FormProcessDisplaySerializer
+
+    def get(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+
+        query = get_list_or_404(
+            FormProcess.objects.filter(
+                process=serializer.validated_data.get('process')).order_by("order"))
+        data = {}
+
+        for form_number, form in enumerate(query):
+            questions = Question.objects.filter(form=form.form)
+            data[f'f{form_number + 1}'] = QuestionSerializer(questions, many=True).data
+
+        return Response(data=data, status=status.HTTP_200_OK)
