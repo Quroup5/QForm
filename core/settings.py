@@ -46,6 +46,7 @@ THIRD_APPS = [
     'rest_framework',
     'django_extensions',
     'rest_framework_simplejwt',
+    'drf_yasg',
 ]
 LOCAL_APPS = [
     'users',

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Form, Question
+from .models import Form, Process, FormProcess, Question
 import re
 
 
@@ -53,3 +53,32 @@ class QuestionSerializer(serializers.ModelSerializer):
             if not isinstance(value, str):
                 raise serializers.ValidationError(
                     {"metadata": f"All values in metadata must be strings for type '{question_type}'."})
+
+
+class ProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Process
+        exclude = ['user']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+
+class FormProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormProcess
+        fields = "__all__"
+
+
+class FormProcessDisplaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormProcess
+        fields = ["process"]
+
+
+class FormDisplaySerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+
+    class Meta:
+        model = Form
+        fields = ["id"]
