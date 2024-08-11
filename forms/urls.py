@@ -8,5 +8,5 @@ router.register(r'questions', QuestionViewSet)
 router.register(r'process', ProcessViewSet)
 router.register(r'formprocess', FormProcessViewSet)
 urlpatterns = [path("process/display/", DisplayProcesView.as_view(), name="display_process"),
-               path("form/display/", DisplayFormView.as_view(), name="display_form")
+               path("forms/display/", DisplayFormView.as_view(), name="display_form")
                ] + router.urls
