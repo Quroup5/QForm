@@ -186,14 +186,6 @@ class CategoryViewSetTests(APITestCase):
         self.category1 = baker.make(Category, title='Category 1', user=self.user)
         self.category2 = baker.make(Category, title='Category 2', user=self.user)
 
-        # Create related objects (optional, depending on your tests)
-        self.form1 = baker.make(Form, title='Form 1', user=self.user)
-        self.process1 = baker.make(Process, name='Process 1', title='Process 1', category=self.category1)
-
-        # Add related objects to categories
-        self.category1.forms.add(self.form1)
-        self.category1.processes.add(self.process1)
-
     def test_create_category(self):
         response = self.client.post('/categories/', {
             'title': 'New Category',
