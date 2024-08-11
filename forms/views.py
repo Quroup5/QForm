@@ -1,11 +1,11 @@
-from django.shortcuts import get_list_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Form, Process, FormProcess, Question
 from .serializers import FormSerializer, ProcessSerializer, FormProcessSerializer, QuestionSerializer, \
-    FormProcessDisplaySerializer
+    FormProcessDisplaySerializer, FormDisplaySerializer
 
 
 class IsFormOwner(permissions.BasePermission):
@@ -82,13 +82,6 @@ class FormProcessViewSet(viewsets.ModelViewSet):
 
         return super().create(request, *args, **kwargs)
 
-    #
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
-    #
-    # def get_queryset(self):
-    #     return Process.objects.filter(user=self.request.user)
-
 
 class DisplayProcesView(APIView):
     serializer_class = FormProcessDisplaySerializer
@@ -96,14 +89,31 @@ class DisplayProcesView(APIView):
     def get(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=self.request.data)
         serializer.is_valid(raise_exception=True)
+        target_process = serializer.validated_data.get('process')
 
-        query = get_list_or_404(
-            FormProcess.objects.filter(
-                process=serializer.validated_data.get('process')).order_by("order"))
+        query = get_list_or_404(FormProcess.objects.filter(process=target_process).order_by("order"))
         data = {}
-
-        for form_number, form in enumerate(query):
-            questions = Question.objects.filter(form=form.form)
+        for form_number, form_process in enumerate(query):
+            form_process.form.visitor_count += 1
+            form_process.form.save()
+            questions = Question.objects.filter(form=form_process.form)
             data[f'f{form_number + 1}'] = QuestionSerializer(questions, many=True).data
 
+        target_process.visitor_count += 1
+        target_process.save()
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+class DisplayFormView(APIView):
+    serializer_class = FormDisplaySerializer
+
+    def get(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        target_form = get_object_or_404(Form, id=serializer.validated_data.get('id'))
+        target_form.visitor_count += 1
+        target_form.save()
+        data = {}
+        questions = Question.objects.filter(form=target_form)
+        data[f'f1'] = QuestionSerializer(questions, many=True).data
         return Response(data=data, status=status.HTTP_200_OK)

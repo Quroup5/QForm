@@ -74,3 +74,11 @@ class FormProcessDisplaySerializer(serializers.ModelSerializer):
     class Meta:
         model = FormProcess
         fields = ["process"]
+
+
+class FormDisplaySerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+
+    class Meta:
+        model = Form
+        fields = ["id"]
