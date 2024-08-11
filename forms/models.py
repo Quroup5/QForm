@@ -5,8 +5,6 @@ from django.contrib.auth.hashers import make_password
 class Category(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
-    # forms = models.ManyToManyField('Form', blank=True, related_name='categories')
-    # processes = models.ManyToManyField('Process', blank=True, related_name='categories')
 
     def __str__(self):
         return self.title
