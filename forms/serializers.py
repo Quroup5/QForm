@@ -58,7 +58,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 class ProcessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Process
-        exclude = ['user']
+        exclude = ['user', 'visitor_count', 'response_count']
         extra_kwargs = {
             'password': {'write_only': True}
         }
