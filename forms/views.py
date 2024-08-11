@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import viewsets, permissions
 from .models import Form, Question
 from .serializers import FormSerializer, QuestionSerializer
 
@@ -12,6 +12,18 @@ class IsQuestionOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.form.user == request.user
 
+    def has_permission(self, request, view):
+        if view.action in ['create', 'list']:
+            form_pk = view.kwargs.get('form_pk')
+            if form_pk:
+                try:
+                    form = Form.objects.get(pk=form_pk)
+                except Form.DoesNotExist:
+                    return False
+                return form.user == request.user
+
+        return True
+
 
 class FormViewSet(viewsets.ModelViewSet):
     queryset = Form.objects.all()
@@ -24,9 +36,6 @@ class FormViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Form.objects.filter(user=self.request.user)
 
-    def retrieve(self, request, *args, **kwargs):
-        pass
-
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
@@ -34,5 +43,5 @@ class QuestionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsQuestionOwner]
 
     def get_queryset(self):
-        return Question.objects.filter(form__user=self.request.user)
-
+        form_pk = self.kwargs['form_pk']
+        return Question.objects.filter(form_id=form_pk)
