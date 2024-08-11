@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Form, Process, FormProcess, Question
+from .models import Form, Process, FormProcess, Question, Category
 import re
 
 
@@ -82,3 +82,12 @@ class FormDisplaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
         fields = ["id"]
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['title']
+        extra_kwargs = {
+            'user': {'read_only': True}
+        }

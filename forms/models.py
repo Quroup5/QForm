@@ -6,6 +6,9 @@ class Category(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.title
+
 
 class Form(models.Model):
     title = models.CharField(max_length=100)
@@ -15,7 +18,7 @@ class Form(models.Model):
     password = models.CharField(max_length=50, null=True)
 
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
-    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.password and not self.password.startswith('pbkdf2_'):

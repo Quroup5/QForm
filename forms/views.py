@@ -3,9 +3,9 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Form, Process, FormProcess, Question
+from .models import Form, Process, FormProcess, Question, Category
 from .serializers import FormSerializer, ProcessSerializer, FormProcessSerializer, QuestionSerializer, \
-    FormProcessDisplaySerializer, FormDisplaySerializer
+    FormProcessDisplaySerializer, FormDisplaySerializer, CategorySerializer
 
 
 class IsFormOwner(permissions.BasePermission):
@@ -120,3 +120,15 @@ class DisplayFormView(APIView):
         questions = Question.objects.filter(form=target_form)
         data[f'f1'] = QuestionSerializer(questions, many=True).data
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticated, IsFormOwner]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
