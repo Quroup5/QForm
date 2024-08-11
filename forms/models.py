@@ -83,4 +83,4 @@ class Response(models.Model):
     answer = models.JSONField()
 
     form = models.ForeignKey('Form', on_delete=models.CASCADE)
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, null=True, blank=True)

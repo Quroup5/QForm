@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions
-from .models import Form, Question
-from .serializers import FormSerializer, QuestionSerializer
+from .models import Form, Question, Response
+from .serializers import FormSerializer, QuestionSerializer, ResponseSerializer
+import pprint
 
 
 class IsFormOwner(permissions.BasePermission):
@@ -43,3 +44,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Question.objects.filter(form__user=self.request.user)
+
+
+class ResponseViewSet(viewsets.ModelViewSet):
+    queryset = Response.objects.all()
+    serializer_class = ResponseSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def perform_create(self, serializer):
+        serializer.save()
