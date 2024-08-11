@@ -13,15 +13,14 @@ class IsQuestionOwner(permissions.BasePermission):
         return obj.form.user == request.user
 
     def has_permission(self, request, view):
-        if view.action in ['create', 'list']:
-            form_pk = view.kwargs.get('form_pk')
+        if view.action == 'create':
+            form_pk = request.data.get('form')
             if form_pk:
                 try:
                     form = Form.objects.get(pk=form_pk)
+                    return form.user == request.user
                 except Form.DoesNotExist:
                     return False
-                return form.user == request.user
-
         return True
 
 
@@ -43,5 +42,4 @@ class QuestionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsQuestionOwner]
 
     def get_queryset(self):
-        form_pk = self.kwargs['form_pk']
-        return Question.objects.filter(form_id=form_pk)
+        return Question.objects.filter(form__user=self.request.user)
