@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Form
+from .models import Form, Category, Process
 
 
 class FormSerializer(serializers.ModelSerializer):
@@ -8,4 +8,13 @@ class FormSerializer(serializers.ModelSerializer):
         exclude = ['user']
         extra_kwargs = {
             'password': {'write_only': True}
+        }
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['title']
+        extra_kwargs = {
+            'user': {'read_only': True}
         }

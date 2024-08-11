@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions
-from .models import Form
-from .serializers import FormSerializer
+from .models import Form, Category
+from .serializers import FormSerializer, CategorySerializer
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -21,3 +21,15 @@ class FormViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)

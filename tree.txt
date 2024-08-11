@@ -1,0 +1,63 @@
+Folder PATH listing
+Volume serial number is 6C2F-7F13
+C:.
+¦   .env-example
+¦   .gitignore
+¦   LICENSE
+¦   manage.py
+¦   README.md
+¦   requirements.txt
+¦   tree.txt
+¦   
++---.idea
+¦   ¦   .gitignore
+¦   ¦   misc.xml
+¦   ¦   modules.xml
+¦   ¦   QForm.iml
+¦   ¦   vcs.xml
+¦   ¦   workspace.xml
+¦   ¦   
+¦   +---inspectionProfiles
+¦           profiles_settings.xml
+¦           Project_Default.xml
+¦           
++---core
+¦       asgi.py
+¦       production_settings.py
+¦       settings.py
+¦       urls.py
+¦       wsgi.py
+¦       __init__.py
+¦       
++---deployment
+¦       Dockerfile
+¦       
++---forms
+¦   ¦   admin.py
+¦   ¦   apps.py
+¦   ¦   models.py
+¦   ¦   serializers.py
+¦   ¦   tests.py
+¦   ¦   urls.py
+¦   ¦   views.py
+¦   ¦   __init__.py
+¦   ¦   
+¦   +---migrations
+¦           0001_initial.py
+¦           0002_alter_form_category_alter_form_user_and_more.py
+¦           __init__.py
+¦           
++---users
+    ¦   admin.py
+    ¦   apps.py
+    ¦   models.py
+    ¦   serializers.py
+    ¦   tests.py
+    ¦   urls.py
+    ¦   views.py
+    ¦   __init__.py
+    ¦   
+    +---migrations
+            0001_initial.py
+            __init__.py
+            
