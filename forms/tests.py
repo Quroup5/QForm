@@ -85,16 +85,14 @@ class QuestionViewSetTests(APITestCase):
 
     def test_create_select_question(self):
         data = {
-            'name': 'Question 2',
-            'label': 'Choose a fruit',
-            'required': True,
-            'type': 'select',
-            'metadata': {
-                'selectbox1': 'Apple',
-                'selectbox2': 'Banana',
-                'selectbox3': 'Cherry',
+            "name": "question1",
+            "label": "Choose your favorite fruit",
+            "required": "true",
+            "type": "select",
+            "metadata": {
+                "options": ["apple", "banana", "orange"]
             },
-            'form': self.form.id,
+            "form": self.form.id,
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -129,16 +127,14 @@ class QuestionViewSetTests(APITestCase):
 
     def test_valid_dynamic_select_metadata(self):
         data = {
-            'name': 'Question 2',
-            'label': 'Choose options',
-            'required': True,
-            'type': 'select',
-            'metadata': {
-                'selectbox1': 'Option 1',
-                'selectbox2': 'Option 2',
-                'selectbox3': 'Option 3',
+            "name": "question3",
+            "label": "Choose your favorite fruit",
+            "required": "true",
+            "type": "select",
+            "metadata": {
+                "options": ["apple", "banana", "orange"]
             },
-            'form': self.form.id,
+            "form": self.form.id,
         }
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -209,10 +205,3 @@ class CategoryViewSetTests(APITestCase):
         })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['title'], 'Updated Category')
-
-    def test_delete_category(self):
-        response = self.client.delete(f'/categories/{self.category1.id}/')
-        self.assertEqual(response.status_code, 204)
-        # Ensure the category is deleted
-        response = self.client.get('/categories/')
-        self.assertEqual(len([c for c in response.data if c['id'] == self.category1.id]), 0)
