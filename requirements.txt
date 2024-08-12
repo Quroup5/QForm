@@ -10,3 +10,4 @@ model-bakery==1.18.2
 drf-yasg==1.21.7
 gunicorn==23.0.0
 psycopg==3.2.1
+psycopg2-binary==2.9.9
