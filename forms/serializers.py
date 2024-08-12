@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Form, Question, Response
+from .models import Form, Question
 import re
 
 
@@ -121,3 +121,41 @@ class ResponseSerializer(serializers.ModelSerializer):
                     })
 
         return data
+
+
+class ProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Process
+        exclude = ['user', 'visitor_count', 'response_count']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+
+class FormProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormProcess
+        fields = "__all__"
+
+
+class FormProcessDisplaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormProcess
+        fields = ["process"]
+
+
+class FormDisplaySerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+
+    class Meta:
+        model = Form
+        fields = ["id"]
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['title']
+        extra_kwargs = {
+            'user': {'read_only': True}
+        }

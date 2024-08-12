@@ -6,6 +6,9 @@ class Category(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.title
+
 
 class Form(models.Model):
     title = models.CharField(max_length=100)
@@ -15,7 +18,7 @@ class Form(models.Model):
     password = models.CharField(max_length=50, null=True)
 
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
-    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.password and not self.password.startswith('pbkdf2_'):
@@ -56,10 +59,10 @@ class Process(models.Model):
     type = models.CharField(max_length=10, choices=PROCESS_TYPE_CHOICES)
     name = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
-    is_private = models.BooleanField(default=False)
     visitor_count = models.IntegerField(default=0)
     response_count = models.IntegerField(default=0)
     password = models.CharField(max_length=50, null=True)
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
 
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
 
@@ -76,7 +79,7 @@ class FormProcess(models.Model):
     form = models.ForeignKey('Form', on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('order', 'process', 'form',)
+        unique_together = ('order', 'process')
 
 
 class Response(models.Model):
