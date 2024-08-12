@@ -87,6 +87,3 @@ class Answer(models.Model):
     form = models.ForeignKey('Form', on_delete=models.CASCADE)
     user = models.ForeignKey('users.User', on_delete=models.CASCADE, null=True, blank=True)
     responder_nickname = models.CharField(max_length=255)
-
-    # class Meta:
-    #     unique_together = ('form', 'process', 'responder_nickname')
