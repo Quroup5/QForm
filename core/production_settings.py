@@ -1,7 +1,7 @@
 from .settings import *
 
-DEBUG = False
-ALLOWED_HOSTS = ['*']
+DEBUG = env.bool('DJANGO_DEBUG', default=True)
+ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=[])
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
