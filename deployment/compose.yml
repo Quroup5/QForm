@@ -1,0 +1,63 @@
+---
+networks:
+  qform-net:
+    name: ct-net
+    driver: bridge
+    external: false
+
+volumes:
+  qform-data:
+    name: be-data
+    driver: local
+    external: false
+
+services:
+  database:
+    image: postgres:latest
+    container_name: qform-postgres
+    hostname: quera
+    restart: always
+    env_file:
+      - ./database/.env.prod.db
+    ports:
+      - 5432:5432
+    volumes:
+      - qform-data:/var/lib/postgresql/data
+    networks:
+      - qform-net
+
+  backend:
+    build: ./backend
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --env DJANGO_SETTINGS_MODULE=core.production_settings
+    expose:
+    - 8000
+    env_file:
+      - ./backend/.env.prod
+    hostname: quera
+    restart: always
+    networks:
+      - qform-net
+    depends_on:
+      database:
+        condition: service_started
+  
+  nginx:
+    build: ./nginx
+    ports:
+      - 1337:80
+    networks:
+      - qform-net
+    depends_on:
+      - backend
+    
+  redis:
+    image: redis:latest
+    container_name: qform-redis
+    hostname: quera
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - qform-net
+    depends_on:
+      - backend
