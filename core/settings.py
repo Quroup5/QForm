@@ -47,6 +47,7 @@ THIRD_APPS = [
     'django_extensions',
     'rest_framework_simplejwt',
     'drf_yasg',
+    'graphene_django'
 ]
 LOCAL_APPS = [
     'users',
