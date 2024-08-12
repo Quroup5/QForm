@@ -8,5 +8,8 @@ djangorestframework-simplejwt==5.3.1
 django-redis==5.4.0
 model-bakery==1.18.2
 drf-yasg==1.21.7
+gunicorn==23.0.0
+psycopg==3.2.1
+psycopg2-binary==2.9.9
 graphene==3.3
 graphene-django==3.2.2

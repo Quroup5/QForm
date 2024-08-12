@@ -4,11 +4,14 @@ from rest_framework.routers import DefaultRouter
 
 from .schema import schema
 from .views import FormViewSet, ProcessViewSet, FormProcessViewSet, QuestionViewSet, DisplayProcesView, DisplayFormView, \
-    CategoryViewSet
+    CategoryViewSet, AnswerViewSet
 
 router = DefaultRouter()
 router.register(r'forms', FormViewSet)
 router.register(r'questions', QuestionViewSet)
+router.register(r'responses', AnswerViewSet)
+
+
 router.register(r'process', ProcessViewSet)
 router.register(r'formprocess', FormProcessViewSet)
 router.register(r'categories', CategoryViewSet)
