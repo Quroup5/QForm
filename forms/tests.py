@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from model_bakery import baker
-from .models import Form, Category, Process
+from .models import Form, Category, Process, FormProcess
 
 
 class FormViewSetTests(APITestCase):
