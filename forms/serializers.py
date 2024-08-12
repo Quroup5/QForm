@@ -1,11 +1,12 @@
 from rest_framework import serializers
-from .models import Form, Process, Question, Category, Response, FormProcess
+from .models import Form, Process, Question, Category, Answer, FormProcess
+from django.contrib.auth.hashers import check_password
 
 
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
-        exclude = ['user', 'visitor_count', 'response_count']
+        exclude = ['user', 'visitor_count', 'answer_count']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -54,28 +55,61 @@ class QuestionSerializer(serializers.ModelSerializer):
         return data
 
 
-class ResponseSerializer(serializers.ModelSerializer):
+class AnswerSerializer(serializers.ModelSerializer):
     form = serializers.PrimaryKeyRelatedField(queryset=Form.objects.all())
+    process = serializers.PrimaryKeyRelatedField(queryset=Process.objects.all(), required=False)
+    responder_nickname = serializers.CharField(max_length=255)  # New field
+    password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
-        model = Response
-        fields = ['form', 'answer']
+        model = Answer
+        fields = ['form', 'process', 'answer', 'responder_nickname', 'password']
 
     def validate(self, data):
-        form_id = data.get('form').id
+        form = data.get('form')
         answers = data.get('answer')
+        password = data.get('password')
+        process = data.get('process')
+        responder_nickname = data.get('responder_nickname')
 
         # Ensure the form exists
-        try:
-            print('********************************************************************')
-            print(form_id, answers)
-            print('********************************************************************')
-            form = Form.objects.get(pk=form_id)
-            print('********************************************************************')
-            print(data)
-            print('********************************************************************')
-        except Form.DoesNotExist:
+        if not form:
             raise serializers.ValidationError({"form": "Form does not exist."})
+
+        if form.is_private:
+            if not password:
+                raise serializers.ValidationError({"password": "Form is password protected."})
+            if not check_password(password, form.password):
+                raise serializers.ValidationError({"password": "Incorrect password."})
+
+        # Validate responder_nickname
+        if not responder_nickname:
+            raise serializers.ValidationError({"responder_nickname": "Responder nickname is required."})
+
+        # If a process is provided, ensure the answer order is correct if the process is linear
+        if process:
+            form_process = FormProcess.objects.filter(process=process, form=form).first()
+
+            if not form_process:
+                raise serializers.ValidationError({"process": "Form does not belong to the provided process."})
+
+            if process.type == Process.LINEAR:
+                # Ensure that the previous forms in the process have been completed
+                previous_forms = FormProcess.objects.filter(
+                    process=process,
+                    order__lt=form_process.order
+                ).values_list('form_id', flat=True)
+
+                missing_answers = set(previous_forms) - set(Answer.objects.filter(
+                    process=process,
+                    form_id__in=previous_forms,
+                    responder_nickname=responder_nickname
+                ).values_list('form_id', flat=True))
+
+                if missing_answers:
+                    raise serializers.ValidationError({
+                        "process": f"You must respond to previous forms in the process before this one. Missing forms: {missing_answers}"
+                    })
 
         # Validate that all provided answers match the form's questions
         questions = Question.objects.filter(form=form)
@@ -119,22 +153,34 @@ class ResponseSerializer(serializers.ModelSerializer):
                         "answer": f"Invalid options selected for question '{question_name}'."
                     })
 
+        data.pop('password', None)  # Remove password from the data before returning
         return data
 
 
 class ProcessSerializer(serializers.ModelSerializer):
     class Meta:
         model = Process
-        exclude = ['user', 'visitor_count', 'response_count']
+        exclude = ['user', 'visitor_count', 'answer_count']
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
 
 class FormProcessSerializer(serializers.ModelSerializer):
+    order = serializers.IntegerField(required=False, allow_null=True)
+
     class Meta:
         model = FormProcess
-        fields = "__all__"
+        fields = ['form', 'process', 'order']
+
+    def validate(self, data):
+        process = data.get('process')
+        order = data.get('order')
+
+        if process.type == process.LINEAR and order is None:
+            raise serializers.ValidationError({'order': 'This field is required. Process is linear.'})
+
+        return data
 
 
 class FormProcessDisplaySerializer(serializers.ModelSerializer):

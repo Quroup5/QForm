@@ -13,7 +13,7 @@ class Category(models.Model):
 class Form(models.Model):
     title = models.CharField(max_length=100)
     visitor_count = models.IntegerField(default=0)
-    response_count = models.IntegerField(default=0)
+    answer_count = models.IntegerField(default=0)
     is_private = models.BooleanField(default=False)
     password = models.CharField(max_length=50, null=True)
 
@@ -60,11 +60,11 @@ class Process(models.Model):
     name = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
     visitor_count = models.IntegerField(default=0)
-    response_count = models.IntegerField(default=0)
+    answer_count = models.IntegerField(default=0)
+    is_private = models.BooleanField(default=False)
     password = models.CharField(max_length=50, null=True)
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
-
-    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.password and not self.password.startswith('pbkdf2_'):
@@ -73,17 +73,20 @@ class Process(models.Model):
 
 
 class FormProcess(models.Model):
-    order = models.PositiveSmallIntegerField()
-
     process = models.ForeignKey('Process', on_delete=models.CASCADE)
     form = models.ForeignKey('Form', on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('order', 'process')
+        unique_together = ('process', 'order')
 
 
-class Response(models.Model):
+class Answer(models.Model):
     answer = models.JSONField()
-
+    process = models.ForeignKey('Process', on_delete=models.CASCADE, null=True, blank=True)
     form = models.ForeignKey('Form', on_delete=models.CASCADE)
     user = models.ForeignKey('users.User', on_delete=models.CASCADE, null=True, blank=True)
+    responder_nickname = models.CharField(max_length=255)
+
+    # class Meta:
+    #     unique_together = ('form', 'process', 'responder_nickname')

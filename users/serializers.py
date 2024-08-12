@@ -27,6 +27,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ['first_name', 'last_name', 'email']
 
+
 class OtpSerializerRequest(serializers.Serializer):
     username = serializers.CharField(max_length=200, required=True)
 

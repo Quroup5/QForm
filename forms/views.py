@@ -3,9 +3,9 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Form, Process, FormProcess, Question, Category, Response
+from .models import Form, Process, FormProcess, Question, Category, Answer
 from .serializers import FormSerializer, ProcessSerializer, FormProcessSerializer, QuestionSerializer, \
-    FormProcessDisplaySerializer, FormDisplaySerializer, CategorySerializer, ResponseSerializer
+    FormProcessDisplaySerializer, FormDisplaySerializer, CategorySerializer, AnswerSerializer
 
 
 class IsFormOwner(permissions.BasePermission):
@@ -134,10 +134,66 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(user=self.request.user)
 
 
-class ResponseViewSet(viewsets.ModelViewSet):
-    queryset = Response.objects.all()
-    serializer_class = ResponseSerializer
+class AnswerViewSet(viewsets.ModelViewSet):
+    queryset = Answer.objects.all()
+    serializer_class = AnswerSerializer
     permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
-        serializer.save()
+        # Save the answer first to get the instance
+        answer = serializer.save()
+
+        # Increment the answer_count for the form
+        form = answer.form
+        form.answer_count += 1
+        form.save()
+
+        # Check if the process needs to be updated
+        process = answer.process
+        if process:
+            self.update_process_answer_count(process, answer.responder_nickname)
+
+    def update_process_answer_count(self, process, responder_nickname):
+        """
+        Increment the answer_count for the process if all forms have been answered by the same responder.
+        """
+        form_ids_in_process = FormProcess.objects.filter(process=process).values_list('form_id', flat=True)
+        answered_form_ids = Answer.objects.filter(
+            process=process,
+            responder_nickname=responder_nickname
+        ).values_list('form_id', flat=True).distinct()
+
+        if set(form_ids_in_process) == set(answered_form_ids):
+            process.answer_count += 1
+            process.save()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Check if the form is part of a process and if it's being submitted in the correct order
+        process = serializer.validated_data.get('process')
+        form = serializer.validated_data.get('form')
+        responder_nickname = serializer.validated_data.get('responder_nickname')
+
+        if process and process.type == Process.LINEAR:
+            # Ensure that answers are submitted in the correct order
+            form_process = FormProcess.objects.filter(process=process, form=form).first()
+
+            previous_answers = Answer.objects.filter(
+                process=process,
+                form__in=FormProcess.objects.filter(process=process, order__lt=form_process.order).values('form'),
+                responder_nickname=responder_nickname
+            )
+
+            if previous_answers.count() < form_process.order - 1:
+                return Response(
+                    {"detail": "You must complete previous forms in the process before submitting this one."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # Save the answer and update answer_count
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
